@@ -13,6 +13,7 @@
 #include "hardware/vreg.h"
 #include "hardware/watchdog.h"
 #include "pico/cyw43_arch.h"
+#include "state_mgr.h"
 #if ENABLE_SERIAL
 #include "pico/stdio_usb.h"
 #endif
@@ -189,18 +190,19 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
     if (report_id == 0) {
         switch (buffer[0]) {
             case 0x02: {
-                set_state_data(buffer + 1, bufsize - 1);
+                state_update(buffer + 1, bufsize - 1);
                 if (spk_active) {
                     break;
                 }
-                uint8_t outputData[78];
+                uint8_t outputData[78]{};
                 outputData[0] = 0x31;
                 outputData[1] = reportSeqCounter << 4;
                 if (++reportSeqCounter == 256) {
                     reportSeqCounter = 0;
                 }
                 outputData[2] = 0x10;
-                memcpy(outputData + 3, buffer + 1, bufsize - 1);
+                // memcpy(outputData + 3, buffer + 1, bufsize - 1);
+                state_set(outputData + 3,sizeof(SetStateData));
                 bt_write(outputData, sizeof(outputData));
                 break;
             }
@@ -219,7 +221,7 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
 int main() {
     vreg_set_voltage(VREG_VOLTAGE_1_20);
     sleep_ms(1000);
-    set_sys_clock_khz(320000, true);
+    set_sys_clock_khz(SYS_CLOCK_KHZ, true);
 
     board_init();
     tusb_rhport_init_t dev_init = {
@@ -273,6 +275,7 @@ int main() {
     bt_register_data_callback(on_bt_data);
 
     audio_init();
+    state_init();
 
 #if !ENABLE_SERIAL
     watchdog_enable(1000, true);
