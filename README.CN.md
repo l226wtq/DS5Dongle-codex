@@ -18,8 +18,17 @@
 # Pico 配置调整
 你可以通过网页调整Pico的内部设置
 
+- 本项目可修改源码版: [`web-config`](web-config)
 - 用于正式固件: https://ds5.awalol.eu.org
 - 用于测试固件: https://ds5-dev.awalol.eu.org
+
+本地运行:
+
+```sh
+cd web-config
+pnpm install
+pnpm dev
+```
 
 ### Pico W 版本
 

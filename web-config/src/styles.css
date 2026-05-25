@@ -1,0 +1,476 @@
+:root {
+  --bg: #f5f7fa;
+  --fg: #111827;
+  --muted: #667085;
+  --panel: #ffffff;
+  --panel-strong: #f8fafc;
+  --border: #d8dee8;
+  --primary: #0f766e;
+  --primary-strong: #0d5f59;
+  --primary-soft: #e6fffb;
+  --accent: #f97316;
+  --danger: #dc2626;
+  --ok: #15803d;
+  --shadow: 0 16px 42px rgba(16, 24, 40, 0.1);
+  --radius: 8px;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --fg: #f8fafc;
+  --muted: #a3afc2;
+  --panel: #182235;
+  --panel-strong: #111827;
+  --border: #344054;
+  --primary: #2dd4bf;
+  --primary-strong: #5eead4;
+  --primary-soft: #143b3a;
+  --accent: #fb923c;
+  --danger: #f87171;
+  --ok: #4ade80;
+  --shadow: 0 18px 48px rgba(0, 0, 0, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    linear-gradient(180deg, rgba(15, 118, 110, 0.08), transparent 260px),
+    var(--bg);
+  color: var(--fg);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.54;
+}
+
+.app-shell {
+  width: min(1180px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 24px 0 36px;
+}
+
+.topbar,
+.device-strip,
+.panel,
+.notice {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  box-shadow: var(--shadow);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--radius);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 12px;
+}
+
+.brand-mark,
+.device-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  border-radius: var(--radius);
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+}
+
+.eyebrow,
+.field-label,
+.metric span,
+.control > span,
+.debug-row span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 2px 0 0;
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--fg);
+  background: var(--panel-strong);
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  color: var(--danger);
+}
+
+.device-strip {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.3fr) repeat(3, minmax(132px, 0.8fr)) auto;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: var(--radius);
+}
+
+.device-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.device-main strong,
+.metric strong {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
+.metric {
+  min-height: 52px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-strong);
+}
+
+.metric.active {
+  border-color: color-mix(in srgb, var(--primary) 60%, var(--border));
+  background: var(--primary-soft);
+}
+
+.device-actions,
+.action-grid {
+  display: flex;
+  gap: 8px;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(330px, 0.42fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.panel {
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.section-title h2,
+.section-block h2 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.section-block {
+  padding: 16px 0;
+  border-top: 1px solid var(--border);
+}
+
+.section-block:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.section-block h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.control,
+.toggle-row {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.range-line {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) 88px auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.range-line em {
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--primary);
+}
+
+.number-input {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 8px;
+  color: var(--fg);
+  background: var(--panel);
+}
+
+.toggle-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 40px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-strong);
+}
+
+.toggle-row input {
+  width: 42px;
+  height: 24px;
+  accent-color: var(--primary);
+}
+
+.segments {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-strong);
+}
+
+.segments button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--muted);
+  background: transparent;
+}
+
+.segments button.selected {
+  color: #ffffff;
+  background: var(--primary);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 12px;
+  color: var(--fg);
+  background: var(--panel-strong);
+  white-space: nowrap;
+}
+
+.button.primary {
+  border-color: var(--primary);
+  color: #ffffff;
+  background: var(--primary);
+}
+
+.button:not(:disabled):hover,
+.icon-button:hover,
+.segments button:not(.selected):hover {
+  border-color: var(--primary);
+}
+
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.operation-text {
+  min-height: 40px;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  color: var(--muted);
+  background: var(--panel-strong);
+}
+
+.debug-grid {
+  display: grid;
+  gap: 8px;
+}
+
+.debug-row {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 9px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-strong);
+}
+
+.debug-row strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.log-box {
+  min-height: 170px;
+  max-height: 330px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--panel-strong);
+}
+
+.log-empty {
+  display: grid;
+  place-items: center;
+  min-height: 168px;
+  color: var(--muted);
+}
+
+.log-line {
+  display: grid;
+  grid-template-columns: 72px 44px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.log-line:last-child {
+  border-bottom: 0;
+}
+
+.log-line span {
+  color: var(--muted);
+}
+
+.log-line p {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.log-line.ok strong {
+  color: var(--ok);
+}
+
+.log-line.warn strong {
+  color: var(--accent);
+}
+
+.log-line.error strong {
+  color: var(--danger);
+}
+
+@media (max-width: 920px) {
+  .device-strip,
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .device-actions,
+  .action-grid {
+    width: 100%;
+  }
+
+  .device-actions .button,
+  .action-grid .button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-shell {
+    width: min(100vw - 20px, 1180px);
+    padding-top: 10px;
+  }
+
+  .topbar {
+    align-items: flex-start;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  .range-line,
+  .debug-row,
+  .log-line {
+    grid-template-columns: 1fr;
+  }
+
+  .segments,
+  .action-grid {
+    grid-template-columns: 1fr;
+  }
+}

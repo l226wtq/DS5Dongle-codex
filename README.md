@@ -44,8 +44,17 @@ You have two options:
 
 You can modify the Pico settings via the web config.
 
+- Local editable source: [`web-config`](web-config)
 - For release: https://ds5.awalol.eu.org
 - For development: https://ds5-dev.awalol.eu.org
+
+To run the local web config:
+
+```sh
+cd web-config
+pnpm install
+pnpm dev
+```
 
 ## Notes
 

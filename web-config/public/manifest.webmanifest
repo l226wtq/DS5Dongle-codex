@@ -1,0 +1,19 @@
+{
+  "name": "DS5 Bridge Config",
+  "short_name": "DS5 Config",
+  "description": "DS5 Bridge HID device configuration tool.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#111827",
+  "lang": "zh-CN",
+  "scope": ".",
+  "icons": [
+    {
+      "src": "pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
