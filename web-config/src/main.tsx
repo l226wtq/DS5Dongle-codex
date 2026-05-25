@@ -16,6 +16,7 @@ import {
   SlidersHorizontal,
   Sun,
   TerminalSquare,
+  Thermometer,
   Usb,
   Volume2,
   Zap,
@@ -29,9 +30,11 @@ import {
   defaultConfig,
   deviceMatchesBridge,
   encodeConfig,
+  HardwareStatus,
   productLabel,
   readConfig,
   readFirmwareVersion,
+  readHardwareStatus,
   readRssi,
   reconnectUsb,
   resetConfig,
@@ -71,6 +74,16 @@ const text = {
     performance: '性能',
     compatibility: '兼容性',
     debug: '调试',
+    hardware: '硬件',
+    frequency: '频率',
+    temperature: '温度',
+    loopLoad: '负载',
+    loopRate: 'Loop/s',
+    uptime: '运行时间',
+    controllerLink: '手柄链路',
+    speakerActive: '扬声器',
+    yes: '是',
+    no: '否',
     hapticsGain: '触觉增益',
     speakerVolumeDb: '扬声器音量 dB',
     speakerVolume: '扬声器音量',
@@ -124,6 +137,16 @@ const text = {
     performance: 'Performance',
     compatibility: 'Compatibility',
     debug: 'Debug',
+    hardware: 'Hardware',
+    frequency: 'Frequency',
+    temperature: 'Temperature',
+    loopLoad: 'Load',
+    loopRate: 'Loop/s',
+    uptime: 'Uptime',
+    controllerLink: 'Controller link',
+    speakerActive: 'Speaker',
+    yes: 'Yes',
+    no: 'No',
     hapticsGain: 'Haptics gain',
     speakerVolumeDb: 'Speaker volume dB',
     speakerVolume: 'Speaker volume',
@@ -175,6 +198,7 @@ function App() {
   const [rawConfigBytes, setRawConfigBytes] = useState<Uint8Array | null>(null);
   const [firmwareVersion, setFirmwareVersion] = useState('');
   const [rssi, setRssi] = useState<number | null>(null);
+  const [hardwareStatus, setHardwareStatus] = useState<HardwareStatus | null>(null);
   const [operation, setOperation] = useState<Operation>(null);
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
@@ -235,15 +259,19 @@ function App() {
       setRawConfigBytes(decoded.rawBytes);
       log('ok', `${t.readOk}: v${decoded.config.protocolVersion}, offset ${decoded.offset}`);
 
-      const [firmware, nextRssi] = await Promise.allSettled([
+      const [firmware, nextRssi, hardware] = await Promise.allSettled([
         readFirmwareVersion(selected),
         readRssi(selected),
+        readHardwareStatus(selected),
       ]);
       if (firmware.status === 'fulfilled') {
         setFirmwareVersion(firmware.value);
       }
       if (nextRssi.status === 'fulfilled') {
         setRssi(nextRssi.value);
+      }
+      if (hardware.status === 'fulfilled') {
+        setHardwareStatus(hardware.value);
       }
     },
     [log, t.readOk],
@@ -339,12 +367,15 @@ function App() {
       return;
     }
     const id = window.setInterval(async () => {
-      try {
-        setRssi(await readRssi(device));
-      } catch {
-        setRssi(null);
+      const [nextRssi, hardware] = await Promise.allSettled([
+        readRssi(device),
+        readHardwareStatus(device),
+      ]);
+      setRssi(nextRssi.status === 'fulfilled' ? nextRssi.value : null);
+      if (hardware.status === 'fulfilled') {
+        setHardwareStatus(hardware.value);
       }
-    }, 5000);
+    }, 2000);
     return () => window.clearInterval(id);
   }, [device]);
 
@@ -566,13 +597,25 @@ function App() {
           </div>
           <p className="operation-text">{operation ? operationLabel(operation, language) : isDirty ? 'Unsaved edits' : t.ready}</p>
 
+          <SectionTitle icon={<Thermometer size={19} />} title={t.hardware} />
+          <div className="hardware-grid">
+            <Metric label={t.frequency} value={hardwareStatus ? `${hardwareStatus.sysClockKhz / 1000} MHz` : t.unknown} />
+            <Metric label={t.temperature} value={hardwareStatus ? `${hardwareStatus.temperatureC.toFixed(1)} °C` : t.unknown} />
+            <Metric label={t.loopLoad} value={hardwareStatus ? `${(hardwareStatus.loopLoadPermille / 10).toFixed(1)}%` : t.unknown} />
+            <Metric label={t.uptime} value={hardwareStatus ? formatUptime(hardwareStatus.uptimeMs) : t.unknown} />
+          </div>
+
           <SectionTitle icon={<TerminalSquare size={19} />} title={t.debug} />
           <div className="debug-grid">
             <DebugRow label={t.protocol} value={`v${config.protocolVersion} · ${config.protocolVersion === 1 ? t.legacyMode : t.devMode}`} />
             <DebugRow label={t.byteLength} value={`${CONFIG_SIZE}`} />
-            <DebugRow label={t.reportIds} value="F6 / F7 / F8 / F9" />
+            <DebugRow label={t.reportIds} value="F6 / F7 / F8 / F9 / FA" />
+            <DebugRow label={t.loopRate} value={hardwareStatus ? `${hardwareStatus.loopIterationsPerSec}` : '-'} />
+            <DebugRow label={t.controllerLink} value={hardwareStatus ? (hardwareStatus.controllerConnected ? t.yes : t.no) : '-'} />
+            <DebugRow label={t.speakerActive} value={hardwareStatus ? (hardwareStatus.speakerActive ? t.yes : t.no) : '-'} />
             <DebugRow label={t.rawConfig} value={rawConfigBytes ? bytesToHex(rawConfigBytes) : '-'} mono />
             <DebugRow label={t.encodedConfig} value={outgoingBytes ? bytesToHex(outgoingBytes) : '-'} mono />
+            <DebugRow label="0xFA" value={hardwareStatus ? bytesToHex(hardwareStatus.rawBytes) : '-'} mono />
           </div>
 
           <div className="log-box" aria-label={t.logs}>
@@ -627,6 +670,20 @@ function operationLabel(operation: Exclude<Operation, null>, language: Language)
     },
   };
   return labels[language][operation];
+}
+
+function formatUptime(ms: number) {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  }
+  return `${seconds}s`;
 }
 
 function IconButton({ title, onClick, children }: { title: string; onClick: () => void; children: React.ReactNode }) {

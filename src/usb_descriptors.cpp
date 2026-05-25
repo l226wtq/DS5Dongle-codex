@@ -627,10 +627,14 @@ uint8_t const desc_hid_report_ds[] = {
     0x09, 0x3A, //   Usage (Vendor 0x3A)
     0x95, 0x3F, //   Report Count (63)
     0xB1, 0x02, //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0xFA, //   Report ID (-6)
+    0x09, 0x3B, //   Usage (Vendor 0x3B)
+    0x95, 0x3F, //   Report Count (63)
+    0xB1, 0x02, //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
     0xC0, // End Collection
-    // 321 bytes
+    // 329 bytes
 };
-static_assert(sizeof(desc_hid_report_ds) == 0x0141);
+static_assert(sizeof(desc_hid_report_ds) == 0x0149);
 
 uint8_t const desc_hid_report_dse[] = {
     0x05, 0x01, // Usage Page (Generic Desktop Ctrls)
@@ -848,10 +852,14 @@ uint8_t const desc_hid_report_dse[] = {
     0x09, 0x3A, //   Usage (Vendor 0x3A)
     0x95, 0x3F, //   Report Count (63)
     0xB1, 0x02, //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+    0x85, 0xFA, //   Report ID (-6)
+    0x09, 0x3B, //   Usage (Vendor 0x3B)
+    0x95, 0x3F, //   Report Count (63)
+    0xB1, 0x02, //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
     0xC0, // End Collection
-    // 437 bytes
+    // 445 bytes
 };
-static_assert(sizeof(desc_hid_report_dse) == 0x01B5);
+static_assert(sizeof(desc_hid_report_dse) == 0x01BD);
 
 #ifdef ENABLE_WAKE_HID
 // 41-byte boot-keyboard report descriptor (modifier byte + reserved + 6 keycodes,

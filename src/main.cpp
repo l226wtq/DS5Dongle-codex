@@ -10,6 +10,7 @@
 #include "audio.h"
 #include "wake.h"
 #include "hardware/watchdog.h"
+#include "hardware_status.h"
 #include "pico/cyw43_arch.h"
 #include "power_mgr.h"
 #include "state_mgr.h"
@@ -256,6 +257,7 @@ int main() {
 #if ENABLE_BATT_LED
     battery_led_init();
 #endif
+    hardware_status_init();
 
 #if !ENABLE_SERIAL
     if (watchdog_caused_reboot()) {
@@ -300,6 +302,7 @@ int main() {
         wake_task();
         audio_loop();
         interrupt_loop();
+        hardware_status_tick();
 #if ENABLE_BATT_LED
         battery_led_tick();
 #endif

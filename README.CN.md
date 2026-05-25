@@ -30,6 +30,8 @@ pnpm install
 pnpm dev
 ```
 
+本地 web-config 还会读取本固件的 `0xFA` report，用于显示 Pico 硬件状态，包括当前频率、近似芯片温度、循环负载、运行时间和连接状态。
+
 ### Pico W 版本
 
 Pico W 由于性能问题，只能支持震动，不支持扬声器。

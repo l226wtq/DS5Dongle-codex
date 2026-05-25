@@ -88,6 +88,7 @@ add_executable(ds5-bridge
         src/config.cpp
         src/cmd.cpp
         src/power_mgr.cpp
+        src/hardware_status.cpp
         src/state_mgr.cpp
 )
 
@@ -168,6 +169,7 @@ target_link_libraries(ds5-bridge
         pico_multicore
         hardware_watchdog
         hardware_timer
+        hardware_adc
         hardware_flash
         pico_flash
         pico_btstack_classic

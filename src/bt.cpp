@@ -92,6 +92,10 @@ void bt_get_signal_strength(int8_t *rssi) {
     }
 }
 
+bool bt_is_controller_connected() {
+    return hid_interrupt_cid != 0;
+}
+
 void bt_l2cap_init() {
     l2cap_event_callback_registration.callback = &l2cap_packet_handler;
     l2cap_add_event_handler(&l2cap_event_callback_registration);

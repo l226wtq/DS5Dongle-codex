@@ -359,6 +359,12 @@ input[type="range"] {
   gap: 8px;
 }
 
+.hardware-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
 .debug-row {
   display: grid;
   grid-template-columns: 128px minmax(0, 1fr);
@@ -470,6 +476,7 @@ input[type="range"] {
   }
 
   .segments,
+  .hardware-grid,
   .action-grid {
     grid-template-columns: 1fr;
   }

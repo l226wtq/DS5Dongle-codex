@@ -4,6 +4,7 @@ export const REPORT_COMMAND = 0xf6;
 export const REPORT_CONFIG = 0xf7;
 export const REPORT_FIRMWARE = 0xf8;
 export const REPORT_RSSI = 0xf9;
+export const REPORT_HARDWARE = 0xfa;
 
 export const SONY_VENDOR_ID = 0x054c;
 export const DS5_PRODUCT_ID = 0x0ce6;
@@ -42,6 +43,18 @@ export interface DecodedConfig {
   config: BridgeConfig;
   rawBytes: Uint8Array;
   offset: number;
+}
+
+export interface HardwareStatus {
+  version: number;
+  uptimeMs: number;
+  sysClockKhz: number;
+  temperatureC: number;
+  loopLoadPermille: number;
+  loopIterationsPerSec: number;
+  controllerConnected: boolean;
+  speakerActive: boolean;
+  rawBytes: Uint8Array;
 }
 
 export class BridgeConfigError extends Error {
@@ -155,6 +168,30 @@ export async function readRssi(device: HIDDevice) {
     return null;
   }
   return new Int8Array(bytes.buffer, bytes.byteOffset, 1)[0];
+}
+
+export async function readHardwareStatus(device: HIDDevice): Promise<HardwareStatus> {
+  const bytes = stripReportId(toUint8Array(await device.receiveFeatureReport(REPORT_HARDWARE)), REPORT_HARDWARE);
+  if (bytes.byteLength < 19) {
+    throw new BridgeConfigError('invalidHardwareStatus', {
+      expectedBytes: 19,
+      actualBytes: bytes.byteLength,
+      rawBytes: bytesToHex(bytes),
+    });
+  }
+
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return {
+    version: view.getUint8(0),
+    uptimeMs: view.getUint32(1, true),
+    sysClockKhz: view.getUint32(5, true),
+    temperatureC: view.getInt16(9, true) / 100,
+    loopLoadPermille: view.getUint16(11, true),
+    loopIterationsPerSec: view.getUint32(13, true),
+    controllerConnected: view.getUint8(17) === 1,
+    speakerActive: view.getUint8(18) === 1,
+    rawBytes: bytes.slice(0, 19),
+  };
 }
 
 export async function applyConfig(device: HIDDevice, config: BridgeConfig) {

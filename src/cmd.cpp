@@ -11,13 +11,17 @@
 #include "bt.h"
 #include "config.h"
 #include "device/usbd.h"
+#include "hardware_status.h"
 #include "pico/time.h"
+
+extern bool spk_active;
 
 bool is_pico_cmd(uint8_t report_id) {
     if (report_id == 0xf6 ||
         report_id == 0xf7 ||
         report_id == 0xf8 ||
-        report_id == 0xf9
+        report_id == 0xf9 ||
+        report_id == 0xfa
     ) {
         return true;
     }
@@ -52,6 +56,15 @@ uint16_t pico_cmd_get(uint8_t report_id, uint8_t *buffer, uint16_t reqlen) {
         printf("[HID] 0xf9 RSSI=%d raw=0x%02X\n", rssi, buffer[0]);
 #endif
         return 1;
+    }
+    if (report_id == 0xfa) {
+        if (sizeof(HardwareStatus) > reqlen) {
+            printf("[Status] Warning: HardwareStatus overflow\n");
+        }
+        const auto status = hardware_status_snapshot(spk_active);
+        const auto len = std::min(sizeof(HardwareStatus), static_cast<size_t>(reqlen));
+        memcpy(buffer, &status, len);
+        return len;
     }
     return 0;
 }
