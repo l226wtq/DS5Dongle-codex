@@ -9,8 +9,6 @@
 #include "resample.h"
 #include "audio.h"
 #include "wake.h"
-#include "hardware/clocks.h"
-#include "hardware/vreg.h"
 #include "hardware/watchdog.h"
 #include "pico/cyw43_arch.h"
 #include "power_mgr.h"

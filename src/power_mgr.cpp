@@ -13,21 +13,24 @@
 namespace {
 bool running_fast = false;
 
-void set_clock_khz(const uint32_t khz, const vreg_voltage voltage) {
-    vreg_set_voltage(voltage);
-    sleep_ms(10);
+bool set_clock_khz(const uint32_t khz) {
     if (!set_sys_clock_khz(khz, true)) {
         printf("[Power] Failed to set system clock to %lu kHz\n", static_cast<unsigned long>(khz));
-        return;
+        return false;
     }
     printf("[Power] System clock set to %lu kHz\n", static_cast<unsigned long>(khz));
+    return true;
 }
 
 void set_fast_clock(void) {
     if (running_fast) {
         return;
     }
-    set_clock_khz(SYS_CLOCK_KHZ, VREG_VOLTAGE_1_20);
+    vreg_set_voltage(VREG_VOLTAGE_1_20);
+    sleep_ms(10);
+    if (!set_clock_khz(SYS_CLOCK_KHZ)) {
+        return;
+    }
     running_fast = true;
 }
 
@@ -35,14 +38,17 @@ void set_idle_clock(void) {
     if (!running_fast) {
         return;
     }
-    set_clock_khz(IDLE_SYS_CLOCK_KHZ, VREG_VOLTAGE_DEFAULT);
+    if (!set_clock_khz(IDLE_SYS_CLOCK_KHZ)) {
+        return;
+    }
+    vreg_set_voltage(VREG_VOLTAGE_DEFAULT);
+    sleep_ms(10);
     running_fast = false;
 }
 }
 
 void power_clock_init(void) {
-    set_clock_khz(SYS_CLOCK_KHZ, VREG_VOLTAGE_1_20);
-    running_fast = true;
+    set_fast_clock();
 }
 
 void power_clock_on_controller_connected(void) {
