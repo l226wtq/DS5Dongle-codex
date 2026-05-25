@@ -50,8 +50,6 @@ export interface HardwareStatus {
   uptimeMs: number;
   sysClockKhz: number;
   temperatureC: number;
-  loopLoadPermille: number;
-  loopIterationsPerSec: number;
   controllerConnected: boolean;
   speakerActive: boolean;
   rawBytes: Uint8Array;
@@ -172,9 +170,9 @@ export async function readRssi(device: HIDDevice) {
 
 export async function readHardwareStatus(device: HIDDevice): Promise<HardwareStatus> {
   const bytes = stripReportId(toUint8Array(await device.receiveFeatureReport(REPORT_HARDWARE)), REPORT_HARDWARE);
-  if (bytes.byteLength < 19) {
+  if (bytes.byteLength < 13) {
     throw new BridgeConfigError('invalidHardwareStatus', {
-      expectedBytes: 19,
+      expectedBytes: 13,
       actualBytes: bytes.byteLength,
       rawBytes: bytesToHex(bytes),
     });
@@ -186,11 +184,9 @@ export async function readHardwareStatus(device: HIDDevice): Promise<HardwareSta
     uptimeMs: view.getUint32(1, true),
     sysClockKhz: view.getUint32(5, true),
     temperatureC: view.getInt16(9, true) / 100,
-    loopLoadPermille: view.getUint16(11, true),
-    loopIterationsPerSec: view.getUint32(13, true),
-    controllerConnected: view.getUint8(17) === 1,
-    speakerActive: view.getUint8(18) === 1,
-    rawBytes: bytes.slice(0, 19),
+    controllerConnected: view.getUint8(11) === 1,
+    speakerActive: view.getUint8(12) === 1,
+    rawBytes: bytes.slice(0, 13),
   };
 }
 

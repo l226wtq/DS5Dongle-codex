@@ -302,7 +302,6 @@ int main() {
         wake_task();
         audio_loop();
         interrupt_loop();
-        hardware_status_tick();
 #if ENABLE_BATT_LED
         battery_led_tick();
 #endif

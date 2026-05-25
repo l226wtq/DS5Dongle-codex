@@ -77,8 +77,6 @@ const text = {
     hardware: '硬件',
     frequency: '频率',
     temperature: '温度',
-    loopLoad: '负载',
-    loopRate: 'Loop/s',
     uptime: '运行时间',
     controllerLink: '手柄链路',
     speakerActive: '扬声器',
@@ -140,8 +138,6 @@ const text = {
     hardware: 'Hardware',
     frequency: 'Frequency',
     temperature: 'Temperature',
-    loopLoad: 'Load',
-    loopRate: 'Loop/s',
     uptime: 'Uptime',
     controllerLink: 'Controller link',
     speakerActive: 'Speaker',
@@ -601,7 +597,6 @@ function App() {
           <div className="hardware-grid">
             <Metric label={t.frequency} value={hardwareStatus ? `${hardwareStatus.sysClockKhz / 1000} MHz` : t.unknown} />
             <Metric label={t.temperature} value={hardwareStatus ? `${hardwareStatus.temperatureC.toFixed(1)} °C` : t.unknown} />
-            <Metric label={t.loopLoad} value={hardwareStatus ? `${(hardwareStatus.loopLoadPermille / 10).toFixed(1)}%` : t.unknown} />
             <Metric label={t.uptime} value={hardwareStatus ? formatUptime(hardwareStatus.uptimeMs) : t.unknown} />
           </div>
 
@@ -610,7 +605,6 @@ function App() {
             <DebugRow label={t.protocol} value={`v${config.protocolVersion} · ${config.protocolVersion === 1 ? t.legacyMode : t.devMode}`} />
             <DebugRow label={t.byteLength} value={`${CONFIG_SIZE}`} />
             <DebugRow label={t.reportIds} value="F6 / F7 / F8 / F9 / FA" />
-            <DebugRow label={t.loopRate} value={hardwareStatus ? `${hardwareStatus.loopIterationsPerSec}` : '-'} />
             <DebugRow label={t.controllerLink} value={hardwareStatus ? (hardwareStatus.controllerConnected ? t.yes : t.no) : '-'} />
             <DebugRow label={t.speakerActive} value={hardwareStatus ? (hardwareStatus.speakerActive ? t.yes : t.no) : '-'} />
             <DebugRow label={t.rawConfig} value={rawConfigBytes ? bytesToHex(rawConfigBytes) : '-'} mono />

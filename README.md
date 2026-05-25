@@ -56,7 +56,7 @@ pnpm install
 pnpm dev
 ```
 
-The local web config also reads report `0xFA` from this firmware to show Pico hardware status, including clock frequency, approximate chip temperature, loop activity, uptime, and link state.
+The local web config also reads report `0xFA` from this firmware to show Pico hardware status, including clock frequency, approximate chip temperature, uptime, and link state.
 
 ## Notes
 
