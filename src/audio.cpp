@@ -12,6 +12,7 @@
 #include "opus.h"
 #include "utils.h"
 #include "pico/multicore.h"
+#include "pico/flash.h"
 #include "pico/util/queue.h"
 #include "config.h"
 #include "state_mgr.h"
@@ -158,6 +159,8 @@ static OpusEncoder *encoder;
 static WDL_Resampler resampler_audio;
 
 void core1_entry() {
+    flash_safe_execute_core_init();
+
     int error = 0;
     encoder = opus_encoder_create(48000, 2,OPUS_APPLICATION_AUDIO, &error);
     if (error != 0) {

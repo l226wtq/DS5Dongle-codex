@@ -9,7 +9,7 @@
 
 #include "utils.h"
 #include "hardware/flash.h"
-#include "hardware/sync.h"
+#include "pico/flash.h"
 #include "pico/cyw43_arch.h"
 
 constexpr uint32_t CONFIG_MAGIC = 0x66ccff00;
@@ -30,6 +30,12 @@ uint32_t calc_config_crc(const Config &con) {
 
 const Config *flash_config() {
     return reinterpret_cast<const Config *>(XIP_BASE + CONFIG_FLASH_OFFSET);
+}
+
+void write_config_flash(void *param) {
+    auto page = static_cast<const uint8_t *>(param);
+    flash_range_erase(CONFIG_FLASH_OFFSET, FLASH_SECTOR_SIZE);
+    flash_range_program(CONFIG_FLASH_OFFSET, page, FLASH_PAGE_SIZE);
 }
 
 void config_valid() {
@@ -97,10 +103,11 @@ bool config_save() {
     memset(page, 0xff, sizeof(page));
     memcpy(page, &config, sizeof(Config));
 
-    const uint32_t interrupts = save_and_disable_interrupts();
-    flash_range_erase(CONFIG_FLASH_OFFSET, FLASH_SECTOR_SIZE);
-    flash_range_program(CONFIG_FLASH_OFFSET, page, sizeof(page));
-    restore_interrupts(interrupts);
+    const int rc = flash_safe_execute(write_config_flash, page, 1000);
+    if (rc != PICO_OK) {
+        printf("[Config] Config write flash failed, flash_safe_execute rc=%d\n", rc);
+        return false;
+    }
 
     Config verify{};
     memcpy(&verify, flash_config(), sizeof(verify));

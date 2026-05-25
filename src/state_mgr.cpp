@@ -37,10 +37,12 @@ void state_init() {
 }
 
 void state_set(uint8_t *data, const uint8_t size) {
+    auto copy_size = size;
     if (size > 63) {
         printf("[StateMgr] Warning: State Set over 63 bytes\n");
+        copy_size = 63;
     }
-    memcpy(data, state, size);
+    memcpy(data, state, copy_size);
 }
 
 void state_update(const uint8_t *data, const uint8_t size) {

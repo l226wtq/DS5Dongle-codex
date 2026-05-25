@@ -378,10 +378,16 @@ static void l2cap_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
         if (channel == hid_interrupt_cid) {
             // printf("[L2CAP] HID Interrupt data len=%u\n", size);
             // printf_hexdump(packet, size);
-            bt_data_callback(INTERRUPT, packet, size);
+            if (bt_data_callback != nullptr) {
+                bt_data_callback(INTERRUPT, packet, size);
+            }
 
             // 静默检测
             if (get_config().disable_inactive_disconnect) {
+                return;
+            }
+            if (size < 13) {
+                printf("[L2CAP] Short HID Interrupt packet: %u bytes\n", size);
                 return;
             }
             if (packet[3] < 120 || packet[3] > 140 ||
@@ -399,8 +405,12 @@ static void l2cap_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
                 bt_disconnect();
             }
         } else if (channel == hid_control_cid) {
+            if (size < 1) {
+                printf("[L2CAP] Empty HID Control packet\n");
+                return;
+            }
             if (check_dse) {
-                if (packet[0] == 0xA3 && packet[1] == 0x70) {
+                if (size >= 2 && packet[0] == 0xA3 && packet[1] == 0x70) {
                     printf("Connected DSE Controller\n");
                     check_dse = false;
                     is_dse = true;
@@ -416,7 +426,7 @@ static void l2cap_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
 #endif
                 }
             }
-            if (packet[0] == 0xA3) {
+            if (size >= 2 && packet[0] == 0xA3) {
                 uint8_t report_id = packet[1];
                 feature_data[report_id].assign(packet + 1, packet + size);
 #if ENABLE_VERBOSE
@@ -427,7 +437,9 @@ static void l2cap_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
             printf("[L2CAP] HID Control data len=%u\n", size);
             printf_hexdump(packet, size);
 #endif
-            bt_data_callback(CONTROL, packet, size);
+            if (bt_data_callback != nullptr) {
+                bt_data_callback(CONTROL, packet, size);
+            }
         } else {
             printf("[L2CAP] Data on unknown channel 0x%04X (Interrupt: 0x%04X, Control: 0x%04X)\n",
                    channel, hid_interrupt_cid, hid_control_cid);
@@ -522,6 +534,9 @@ static void l2cap_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
 
         case L2CAP_EVENT_CAN_SEND_NOW: {
             // printf("[L2CAP] L2CAP_EVENT_CAN_SEND_NOW\n");
+            if (hid_interrupt_cid == 0) {
+                break;
+            }
 
             send_element send_packet{};
             if (queue_try_remove(&send_fifo, &send_packet)) {
@@ -540,6 +555,10 @@ static void l2cap_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
 
 void bt_write(const uint8_t *data, const uint16_t len) {
     if (hid_interrupt_cid == 0) return;
+    if (len + 1 > sizeof(send_element::data)) {
+        printf("[L2CAP bt_write] Error: packet too large: %u bytes\n", len);
+        return;
+    }
     static send_element packet{};
     memset(packet.data, 0, 512);
     packet.len = len + 1;

@@ -83,39 +83,45 @@ void interrupt_loop() {
 
 void on_bt_data(CHANNEL_TYPE channel, uint8_t *data, uint16_t len) {
     // printf("[Main] BT data callback: channel=%u len=%u\n", channel, len);
-    if (channel == INTERRUPT && data[1] == 0x31) {
-        if ((data[56] & 1) != (interrupt_in_data[53] & 1)) {
-            set_headset(data[56] & 1);
-        }
+    if (channel != INTERRUPT || len < 2 || data[1] != 0x31) {
+        return;
+    }
+    if (len < 66) {
+        printf("[BT] Short DualSense input report: %u bytes\n", len);
+        return;
+    }
 
-        // Wake-on-PS must observe every BT input report regardless of polling
-        // mode: the wake feature has its own state to maintain (button-byte
-        // diff for edge detection) and short-circuiting it on non-2 polling
-        // modes silently breaks wake while the host is suspended.
-        wake_on_bt_input(data + 3, len - 3);
+    if ((data[56] & 1) != (interrupt_in_data[53] & 1)) {
+        set_headset(data[56] & 1);
+    }
 
-        if (get_config().polling_rate_mode != 2) {
-            memcpy(interrupt_in_data, data + 3, 63);
-#if ENABLE_BATT_LED
-            battery_led_note_report();
-#endif
-            return;
-        }
+    // Wake-on-PS must observe every BT input report regardless of polling
+    // mode: the wake feature has its own state to maintain (button-byte
+    // diff for edge detection) and short-circuiting it on non-2 polling
+    // modes silently breaks wake while the host is suspended.
+    wake_on_bt_input(data + 3, len - 3);
 
-        // We add the critical section here to avoid any race conditions when writing to the interrupt_in_data buffer,
-        // which is shared between the main loop and this callback.
-        // The critical section ensures that only one thread can access the buffer at a time,
-        // preventing data corruption and ensuring thread safety.
-        // We also set the report_dirty flag to true to indicate that new data is available
-        //  and needs to be sent in the next interrupt report.
-        critical_section_enter_blocking(&report_cs);
+    if (get_config().polling_rate_mode != 2) {
         memcpy(interrupt_in_data, data + 3, 63);
-        report_dirty = true;
-        critical_section_exit(&report_cs);
 #if ENABLE_BATT_LED
         battery_led_note_report();
 #endif
+        return;
     }
+
+    // We add the critical section here to avoid any race conditions when writing to the interrupt_in_data buffer,
+    // which is shared between the main loop and this callback.
+    // The critical section ensures that only one thread can access the buffer at a time,
+    // preventing data corruption and ensuring thread safety.
+    // We also set the report_dirty flag to true to indicate that new data is available
+    //  and needs to be sent in the next interrupt report.
+    critical_section_enter_blocking(&report_cs);
+    memcpy(interrupt_in_data, data + 3, 63);
+    report_dirty = true;
+    critical_section_exit(&report_cs);
+#if ENABLE_BATT_LED
+    battery_led_note_report();
+#endif
 }
 
 // Invoked when received GET_REPORT control request
@@ -180,6 +186,9 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
     (void) bufsize;
 
     if (is_pico_cmd(report_id)) {
+        if (bufsize == 0) {
+            return;
+        }
         printf("[HID] Receive 0xf6 setting config, funcid:0x%02X\n", buffer[0]);
         pico_cmd_set(report_id, buffer, bufsize);
         return;
@@ -187,6 +196,9 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
 
     // INTERRUPT OUT
     if (report_id == 0) {
+        if (bufsize == 0) {
+            return;
+        }
         switch (buffer[0]) {
             case 0x02: {
                 state_update(buffer + 1, bufsize - 1);
