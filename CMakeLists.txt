@@ -87,6 +87,7 @@ add_executable(ds5-bridge
         src/bt.cpp
         src/config.cpp
         src/cmd.cpp
+        src/power_mgr.cpp
         src/state_mgr.cpp
 )
 
@@ -123,6 +124,7 @@ target_compile_definitions(ds5-bridge PRIVATE
         ENABLE_VERBOSE=${ENABLE_VERBOSE_VALUE}
         ENABLE_BATT_LED=${ENABLE_BATT_LED_VALUE}
         SYS_CLOCK_KHZ=${SYS_CLOCK_KHZ_VALUE}
+        IDLE_SYS_CLOCK_KHZ=125000
         DISABLE_SPEAKER_PROC=${DISABLE_SPEAKER_PROC_VALUE}
 )
 

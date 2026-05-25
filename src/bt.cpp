@@ -16,6 +16,7 @@
 #include "bsp/board_api.h"
 #include "classic/sdp_server.h"
 #include "config.h"
+#include "power_mgr.h"
 #include "state_mgr.h"
 #include "pico/util/queue.h"
 #if ENABLE_BATT_LED
@@ -331,6 +332,7 @@ static void hci_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t *p
         }
 
         case HCI_EVENT_DISCONNECTION_COMPLETE: {
+            power_clock_on_controller_disconnected();
 #if !ENABLE_SERIAL && !defined(ENABLE_WAKE_HID)
             // Without ENABLE_WAKE_HID we hide the USB device whenever no
             // controller is paired (upstream behavior). With wake enabled
@@ -449,6 +451,7 @@ static void l2cap_packet_handler(uint8_t packet_type, uint16_t channel, uint8_t 
                 } else if (psm == PSM_HID_INTERRUPT) {
                     printf("[L2CAP] HID Interrupt opened cid=0x%04X\n", local_cid);
                     hid_interrupt_cid = local_cid;
+                    power_clock_on_controller_connected();
 
                     if (!get_config().disable_pico_led) {
                         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, true);

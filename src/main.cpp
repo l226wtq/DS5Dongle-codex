@@ -13,6 +13,7 @@
 #include "hardware/vreg.h"
 #include "hardware/watchdog.h"
 #include "pico/cyw43_arch.h"
+#include "power_mgr.h"
 #include "state_mgr.h"
 #if ENABLE_SERIAL
 #include "pico/stdio_usb.h"
@@ -219,9 +220,7 @@ void tud_hid_set_report_cb(uint8_t itf, uint8_t report_id, hid_report_type_t rep
 }
 
 int main() {
-    vreg_set_voltage(VREG_VOLTAGE_1_20);
-    sleep_ms(1000);
-    set_sys_clock_khz(SYS_CLOCK_KHZ, true);
+    power_clock_init();
 
     board_init();
     tusb_rhport_init_t dev_init = {
@@ -276,6 +275,7 @@ int main() {
 
     audio_init();
     state_init();
+    power_clock_on_controller_disconnected();
 
 #if !ENABLE_SERIAL
     watchdog_enable(1000, true);

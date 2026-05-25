@@ -87,6 +87,10 @@ Current settings:
 - Voltage: 1.2V
 - Frequency: 320 MHz
 
+The firmware drops back to the default 125 MHz / default voltage while no
+controller is connected, and switches to the overclocked profile when the
+DualSense HID interrupt channel opens.
+
 If your device fails to boot:
 
 - Increase voltage slightly or Reduce CPU frequency
